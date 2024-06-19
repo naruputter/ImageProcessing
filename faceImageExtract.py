@@ -1,6 +1,23 @@
 import cv2 
 import dlib
 import os
+import math
+import numpy as np
+
+def distance_two_point(point_list_1, point_list_2):
+
+    x1 = point_list_1[0]
+    y1 = point_list_1[1]
+
+    x2 = point_list_2[0]
+    y2 = point_list_2[1]
+
+    x_range_square = ( x2 - x1 ) ** 2
+    y_range_square = ( y2 - y1 ) ** 2
+
+    distance = math.sqrt(x_range_square + y_range_square)
+
+    return distance
 
 def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray=False):
 
@@ -12,9 +29,20 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
 
         image = cv2.imread(imagePath)
         image_height, image_width, channels = image.shape
+
+        image_diagonal = math.sqrt( ( image_width**2 ) + ( image_height**2))
+
         image_size_bytes = os.path.getsize(imagePath)
 
-        image_info = { "width" : image_width, "height" : image_height, "fileSize": image_size_bytes }
+        ### Find Brightness Value ###################################
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image_brightness = np.mean(gray)/256
+
+        ### Find Center Point #######################################
+        image_center_point = [(image_width/2), (image_height/2)]
+
+        image_info = { "width" : image_width, "height" : image_height, "brightness":image_brightness, "fileSize": image_size_bytes }
 
         face_frame_list = detect_person_face(image, 1)
 
@@ -32,6 +60,10 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
                 x_size_add = (x_size*extendFrame)/100
                 y_size_add = (y_size*extendFrame)/100
 
+                ### Find Center Point #######################################
+                face_center_point = [((face_frame.right() - face_frame.left())/2)+face_frame.left(), ((face_frame.bottom() - face_frame.top())/2)+face_frame.top()]
+                face_center_error_postition = distance_two_point(image_center_point, face_center_point)
+
                 face_frame_left   = int( face_frame.left()   - x_size_add )
                 face_frame_right  = int( face_frame.right()  + x_size_add )
                 face_frame_top    = int( face_frame.top()    + y_size_add*2 )
@@ -42,8 +74,14 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
 
                 crop_face_image = image[face_frame_top:face_frame_bottom, face_frame_left:face_frame_right]
 
+                ### Find Brightness Value ###################################
+                gray_face = cv2.cvtColor(crop_face_image, cv2.COLOR_BGR2GRAY)
+                face_brightness = np.mean(gray_face) / 256
+
+                face_feature['brightness'] = face_brightness
                 face_feature['width']  = face_frame_right - face_frame_left
                 face_feature['height'] = face_frame_bottom - face_frame_top
+                face_feature['positionError'] = (face_center_error_postition/image_diagonal)*2
 
                 if returnFaceImageArray :
                     face_feature['cropFaceImage'] = crop_face_image
@@ -74,7 +112,7 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
 
         return return_data
 
-def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=10000000, minFaceRatio=50 ) :
+def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=10000000, lowestBright=0.5, highestErrorPostion=0.2, minFaceRatio=50 ) :
 
     return_data = { "code" : None, "data" : None, "desc" : None }
 
@@ -109,7 +147,17 @@ def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=100
 
             face_ratio = ( face_area / image_area ) * 100
 
-            if face_ratio < minFaceRatio :
+            if face_feature['brightness'] < lowestBright :
+
+                return_data['code'] = -1
+                return_data['desc'] = "Face brightness is to low"  
+
+            elif face_feature['positionError'] > highestErrorPostion :
+
+                return_data['code'] = -1
+                return_data['desc'] = "Face position not be center"    
+
+            elif face_ratio < minFaceRatio :
 
                 return_data['code'] = -1
                 return_data['desc'] = "Face in image is too small"    
@@ -134,8 +182,10 @@ def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=100
 
 if __name__ == '__main__':
     
-    # resp_data = extract_face_from_image_path("putter.jpg")
+    extract_resp = extract_face_from_image_path("piano.png")
 
-    validate_resp = vaildate_face_from_image_path("putter1.png") 
+    print(extract_resp)
+
+    validate_resp = vaildate_face_from_image_path("putter.png") 
 
     print(validate_resp)
