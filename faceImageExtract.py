@@ -25,7 +25,7 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
 
     detect_person_face = dlib.get_frontal_face_detector()
 
-    try:
+    try :
 
         image = cv2.imread(imagePath)
         image_height, image_width, channels = image.shape
@@ -68,6 +68,11 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
                 face_frame_right  = int( face_frame.right()  + x_size_add )
                 face_frame_top    = int( face_frame.top()    + y_size_add*2 )
                 face_frame_bottom = int( face_frame.bottom() - y_size_add/2 )
+
+                if face_frame_left   < 0 : face_frame_left   = 0
+                if face_frame_right  < 0 : face_frame_right  = 0
+                if face_frame_top    < 0 : face_frame_top    = 0
+                if face_frame_bottom < 0 : face_frame_bottom = 0
 
                 xy = face_frame_left, face_frame_top
                 wh = face_frame_right, face_frame_bottom
@@ -112,7 +117,7 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
 
         return return_data
 
-def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=10000000, lowestBright=0.5, highestErrorPostion=0.2, minFaceRatio=50 ) :
+def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=1000000, lowestBright=0.4, highestErrorPostion=0.2, minFaceRatio=50 ) :
 
     return_data = { "code" : None, "data" : None, "desc" : None }
 
@@ -182,10 +187,10 @@ def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=100
 
 if __name__ == '__main__':
     
-    extract_resp = extract_face_from_image_path("piano.png")
+    extract_resp = extract_face_from_image_path("moo.jpg")
 
     print(extract_resp)
 
-    validate_resp = vaildate_face_from_image_path("putter.png") 
+    validate_resp = vaildate_face_from_image_path("moo.jpg") 
 
     print(validate_resp)
