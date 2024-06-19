@@ -74,8 +74,68 @@ def extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray
 
         return return_data
 
+def vaildate_face_from_image_path(imagePath, smallestSize=10000, largestSize=10000000, minFaceRatio=50 ) :
+
+    return_data = { "code" : None, "data" : None, "desc" : None }
+
+    extract_image_resp = extract_face_from_image_path(imagePath, extendFrame=25, returnFaceImageArray=False)
+
+    if extract_image_resp['code'] == 200 :
+
+        image_info        = extract_image_resp['data']['imageInfo']
+        face_feature_list = extract_image_resp['data']['faceList']
+
+        if image_info['fileSize'] > largestSize :
+
+            return_data['code'] = -1
+            return_data['desc'] = "Image size is too large"
+
+        elif image_info['fileSize'] < smallestSize :
+
+            return_data['code'] = -1
+            return_data['desc'] = "Image size is too small"
+
+        elif len(face_feature_list) > 1 :
+
+            return_data['code'] = -1
+            return_data['desc'] = "Have many face in image"    
+
+        elif len(face_feature_list) == 1 :
+
+            face_feature = face_feature_list[0]
+
+            face_area = face_feature['width'] + face_feature['height']
+            image_area = image_info['width'] + image_info['height']
+
+            face_ratio = ( face_area / image_area ) * 100
+
+            if face_ratio < minFaceRatio :
+
+                return_data['code'] = -1
+                return_data['desc'] = "Face in image is too small"    
+
+            else :
+
+                return_data['code'] = 200
+                return_data['desc'] = "success"
+
+        else :
+
+            return_data['code'] = 500
+            return_data['desc'] = "Unknow Case"   
+
+    else :
+
+        return_data['code'] = extract_image_resp['code']
+        return_data['desc'] = extract_image_resp['desc']
+
+    return return_data
+
 
 if __name__ == '__main__':
     
-    resp_data = extract_face_from_image_path("806A0549.JPG")
-    print(resp_data)
+    # resp_data = extract_face_from_image_path("putter.jpg")
+
+    validate_resp = vaildate_face_from_image_path("putter1.png") 
+
+    print(validate_resp)
