@@ -59,6 +59,38 @@ class FaceRecognition :
 
 					raise Exception("set_face_database() jsonDataList must only json")
 
+	def reduce_image( self, targetSize=500000, minDimension=600 ):
+
+		height, width = self.imageObject.shape[:2]
+
+		if width < height:
+		    scale_factor = minDimension / width
+		else:
+			scale_factor = minDimension / height
+
+		new_width = int(width * scale_factor)
+		new_height = int(height * scale_factor)
+
+		resized_image = cv2.resize(self.imageObject, (new_width, new_height), interpolation=cv2.INTER_AREA)
+
+		cv2.imwrite(self.imagePath, resized_image)
+
+
+		image_size = os.path.getsize(self.imagePath)
+
+		quality = 100
+
+		while (targetSize <= image_size):
+			
+			quality = quality - 1
+			cv2.imwrite(self.imagePath, self.imageObject, [cv2.IMWRITE_JPEG_QUALITY, quality])
+			image_size = os.path.getsize(self.imagePath)
+			print(image_size)
+
+			if quality == 0 :
+
+				break;
+
 	def extract_face( self, extendFrame=25, returnFaceImageArray=False ):
 
 	    return_data = { "code" : None, "data" : None, "desc" : None }
@@ -409,7 +441,11 @@ if __name__ == '__main__':
 
 	# face_rec.set_image_path(imagePath="/Users/putter/Desktop/putter3.png")
 
-	print(read_image_in_folder_to_jsonDataBase("/Users/putter/Desktop/nvk"))
+	# print(read_image_in_folder_to_jsonDataBase("/Users/putter/Desktop/nvk"))
+	face_rec = FaceRecognition(imagePath='/Users/putter/Desktop/sea.png')
+	face_rec.reduce_image(500000)
+
+	print(face_rec.vaildate_face())
 
 
 
