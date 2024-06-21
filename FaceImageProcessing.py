@@ -188,7 +188,7 @@ class FaceRecognition :
 
 	        return return_data
 
-	def validate_face( self, smallestSize=10000, largestSize=10000000, lowestBright=0.4, highestErrorPostion=0.2, minFaceRatio=50 ) :
+	def validate_face( self, smallestSize=10000, largestSize=10000000, lowestBright=0.4, highestErrorPostion=0.2, minFaceRatio=0.5 ) :
 
 	    return_data = { "code" : None, "data" : None, "desc" : None }
 
@@ -221,7 +221,7 @@ class FaceRecognition :
 	            face_area = face_feature['width'] + face_feature['height']
 	            image_area = image_info['width'] + image_info['height']
 
-	            face_ratio = ( face_area / image_area ) * 100
+	            face_ratio = ( face_area / image_area )
 
 	            if face_feature['brightness'] < lowestBright :
 
