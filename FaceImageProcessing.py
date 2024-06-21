@@ -85,11 +85,12 @@ class FaceRecognition :
 			quality = quality - 1
 			cv2.imwrite(self.imagePath, self.imageObject, [cv2.IMWRITE_JPEG_QUALITY, quality])
 			image_size = os.path.getsize(self.imagePath)
-			print(image_size)
 
 			if quality == 0 :
 
 				break;
+
+		self.imageObject = cv2.imread(self.imagePath)
 
 	def extract_face( self, extendFrame=25, returnFaceImageArray=False ):
 
@@ -187,7 +188,7 @@ class FaceRecognition :
 
 	        return return_data
 
-	def vaildate_face( self, smallestSize=10000, largestSize=10000000, lowestBright=0.4, highestErrorPostion=0.2, minFaceRatio=50 ) :
+	def validate_face( self, smallestSize=10000, largestSize=10000000, lowestBright=0.4, highestErrorPostion=0.2, minFaceRatio=50 ) :
 
 	    return_data = { "code" : None, "data" : None, "desc" : None }
 
@@ -445,7 +446,7 @@ if __name__ == '__main__':
 	face_rec = FaceRecognition(imagePath='/Users/putter/Desktop/sea.png')
 	face_rec.reduce_image(500000)
 
-	print(face_rec.vaildate_face())
+	print(face_rec.validate_face())
 
 
 
