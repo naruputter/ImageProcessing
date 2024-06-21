@@ -300,9 +300,16 @@ class FaceRecognition :
 
 	                person_list.append(person_data)
 
-	        return_data['code'] = 200
-	        return_data['data'] = person_list
-	        return_data['desc'] = "Detect success"
+	        if len(person_list) >= 1 :
+
+		        return_data['code'] = 200
+		        return_data['data'] = person_list
+		        return_data['desc'] = "Detect success"
+
+		    else :
+
+		        return_data['code'] = 404
+		        return_data['desc'] = "Person not found"
 
 	    return return_data
 
